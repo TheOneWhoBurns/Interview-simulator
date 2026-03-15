@@ -1,0 +1,24 @@
+{
+  "job_id": "test123",
+  "total_rounds": 1,
+  "overall_score": 6.5,
+  "topic_mastery": [
+    {"topic": "Data Structures", "subtopic": "Trees", "score": 8.0, "attempts": 1, "trend": "stable"},
+    {"topic": "Algorithms", "subtopic": "BFS/DFS", "score": 5.0, "attempts": 1, "trend": "stable"},
+    {"topic": "System Design", "subtopic": "Scalability", "score": 4.5, "attempts": 1, "trend": "stable"}
+  ],
+  "persistent_weaknesses": [
+    {"area": "BFS/DFS", "description": "Struggles with graph traversal beyond basic tree DFS", "severity": "medium", "first_seen_round": 1, "still_active": true}
+  ],
+  "demonstrated_strengths": [
+    {"area": "Tree traversal", "description": "Clean recursive solutions", "confidence": "medium"}
+  ],
+  "next_round_guidance": {
+    "topic_distribution": {"Data Structures": 0.2, "Algorithms": 0.4, "System Design": 0.3, "Python": 0.1},
+    "difficulty_adjustment": "maintain",
+    "priority_areas": ["BFS/DFS", "Dynamic Programming", "System Design"],
+    "avoid_topics": [],
+    "specific_instructions": "More graph problems, start with medium difficulty DP"
+  },
+  "score_history": [6.5]
+}

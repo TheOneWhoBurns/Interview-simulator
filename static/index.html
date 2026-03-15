@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interview Simulator</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <!-- CodeMirror via CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/theme/material-darker.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/python/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/javascript/javascript.min.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Interview Simulator</h1>
+        <nav>
+            <button id="nav-home" class="active" onclick="showView('home')">Home</button>
+            <button id="nav-research" onclick="showView('research')">Research Job</button>
+            <button id="nav-quiz" onclick="showView('quiz')">Interview</button>
+            <button id="nav-progress" onclick="showView('progress')">Progress</button>
+        </nav>
+    </header>
+
+    <main>
+        <!-- ── Home View ──────────────────────────────────────────── -->
+        <div id="view-home">
+            <div class="card">
+                <h2>Your Jobs</h2>
+                <div id="job-list"><p class="text-dim text-sm">Loading...</p></div>
+            </div>
+        </div>
+
+        <!-- ── Research View ──────────────────────────────────────── -->
+        <div id="view-research" class="hidden">
+            <!-- Step 1: URL Input -->
+            <div id="research-step1" class="card">
+                <h2>Research a Job Listing</h2>
+                <label>Job Listing URL</label>
+                <input type="url" id="job-url" placeholder="https://..." />
+                <div class="mt-16">
+                    <button class="btn" onclick="startResearch()">Research Job</button>
+                </div>
+            </div>
+
+            <!-- Step 2: Clarifying Questions -->
+            <div id="research-step2" class="card hidden">
+                <h2>Personalize Your Prep</h2>
+                <div id="research-info" class="mb-16"></div>
+                <div id="clarifying-questions"></div>
+                <div class="mt-16">
+                    <button class="btn" onclick="finalizeProfile()">Finalize Profile</button>
+                </div>
+            </div>
+
+            <!-- Step 3: Done -->
+            <div id="research-step3" class="card hidden">
+                <h2>Profile Ready</h2>
+                <p class="mb-16">Your interview profile is set up. Start a practice round!</p>
+                <button class="btn" onclick="startInterviewFromProfile()">Start Interview Round</button>
+            </div>
+        </div>
+
+        <!-- ── Quiz View ──────────────────────────────────────────── -->
+        <div id="view-quiz" class="hidden">
+            <!-- Job selector -->
+            <div id="quiz-select" class="card">
+                <h2>Select Job</h2>
+                <div id="quiz-job-list"></div>
+            </div>
+
+            <!-- Active quiz -->
+            <div id="quiz-active" class="hidden">
+                <div class="card">
+                    <div class="question-header">
+                        <div class="question-meta" id="q-meta"></div>
+                        <div class="flex gap-8" style="align-items:center">
+                            <button class="audio-btn" onclick="speakQuestion()" title="Read aloud">&#9654;</button>
+                            <div class="timer" id="q-timer">00:00</div>
+                        </div>
+                    </div>
+                    <h3 id="q-title"></h3>
+                    <div class="question-body" id="q-body"></div>
+
+                    <!-- Test cases -->
+                    <div id="q-test-cases" class="test-cases"></div>
+
+                    <!-- Hints -->
+                    <div id="q-hints" class="mt-8"></div>
+                </div>
+
+                <!-- Answer area -->
+                <div class="card">
+                    <h2>Your Answer</h2>
+                    <div class="answer-tabs" id="answer-tabs">
+                        <button class="answer-tab active" onclick="switchAnswerTab('code')">Code</button>
+                        <button class="answer-tab" onclick="switchAnswerTab('text')">Text</button>
+                    </div>
+                    <div class="answer-panel">
+                        <div id="answer-code">
+                            <div id="code-editor-container"></div>
+                            <div class="flex-between mt-8">
+                                <button class="btn-secondary btn" onclick="runCode()">Run Code</button>
+                                <div class="text-sm text-dim" id="run-status"></div>
+                            </div>
+                        </div>
+                        <div id="answer-text" class="hidden">
+                            <textarea id="text-answer" rows="8" placeholder="Type your answer..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Test results -->
+                    <div id="test-results" class="mt-16 hidden"></div>
+
+                    <div class="flex-between mt-16">
+                        <div class="text-sm text-dim">
+                            Question <span id="q-current">1</span> of <span id="q-total">4</span>
+                        </div>
+                        <button class="btn" onclick="submitAnswer()" id="submit-btn">Submit Answer</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Evaluation -->
+            <div id="quiz-eval" class="hidden">
+                <div class="card">
+                    <h2>Round Complete</h2>
+                    <p class="mb-16">All questions answered. Ready to evaluate?</p>
+                    <button class="btn btn-success" onclick="evaluateRound()">Evaluate My Answers</button>
+                </div>
+            </div>
+
+            <!-- Results -->
+            <div id="quiz-results" class="hidden"></div>
+        </div>
+
+        <!-- ── Progress View ──────────────────────────────────────── -->
+        <div id="view-progress" class="hidden">
+            <div id="progress-select" class="card">
+                <h2>Select Job</h2>
+                <div id="progress-job-list"></div>
+            </div>
+            <div id="progress-content" class="hidden"></div>
+        </div>
+    </main>
+
+    <!-- Loading overlay -->
+    <div id="loading" class="loading-overlay hidden">
+        <div class="spinner"></div>
+        <div id="loading-text">Working...</div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

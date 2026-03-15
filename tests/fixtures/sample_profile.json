@@ -1,0 +1,39 @@
+{
+  "job_id": "test123",
+  "url": "https://example.com/jobs/123",
+  "company": {
+    "name": "Acme Corp",
+    "industry": "Technology",
+    "size": "mid-size",
+    "culture_notes": "Fast-paced, collaborative",
+    "tech_stack": ["Python", "FastAPI", "PostgreSQL", "React"]
+  },
+  "role": {
+    "title": "Senior Backend Engineer",
+    "level": "senior",
+    "team": "Platform",
+    "responsibilities": ["Design APIs", "Mentor juniors"],
+    "required_skills": ["Python", "SQL", "System Design"],
+    "preferred_skills": ["Kubernetes", "Go"]
+  },
+  "interview_focus": {
+    "topics": [
+      {"topic": "Data Structures", "weight": 0.3, "subtopics": ["Trees", "Graphs", "Hash Maps"], "expected_difficulty": "medium"},
+      {"topic": "System Design", "weight": 0.3, "subtopics": ["Scalability", "Caching"], "expected_difficulty": "hard"},
+      {"topic": "Algorithms", "weight": 0.25, "subtopics": ["BFS/DFS", "Dynamic Programming"], "expected_difficulty": "medium"},
+      {"topic": "Python", "weight": 0.15, "subtopics": ["Concurrency", "OOP"], "expected_difficulty": "medium"}
+    ],
+    "estimated_rounds": 3,
+    "format_notes": "Mix of coding and system design"
+  },
+  "user_context": {
+    "years_experience": 5,
+    "strongest_languages": ["Python", "JavaScript"],
+    "weakest_areas": ["Dynamic Programming", "System Design"],
+    "target_level": "senior",
+    "additional_context": "",
+    "clarifying_answers": {}
+  },
+  "clarifying_questions": [],
+  "finalized": true
+}
