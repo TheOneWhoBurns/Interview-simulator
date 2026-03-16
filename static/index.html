@@ -11,6 +11,16 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/python/python.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/clike/clike.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/go/go.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/ruby/ruby.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/rust/rust.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/sql/sql.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/shell/shell.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/htmlmixed/htmlmixed.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.18/mode/jsx/jsx.min.js"></script>
 </head>
 <body>
     <header>
@@ -93,9 +103,26 @@
                 <!-- Answer area -->
                 <div class="card">
                     <h2>Your Answer</h2>
-                    <div class="answer-tabs" id="answer-tabs">
-                        <button class="answer-tab active" onclick="switchAnswerTab('code')">Code</button>
-                        <button class="answer-tab" onclick="switchAnswerTab('text')">Text</button>
+                    <div class="flex-between">
+                        <div class="answer-tabs" id="answer-tabs">
+                            <button class="answer-tab active" onclick="switchAnswerTab('code')">Code</button>
+                            <button class="answer-tab" onclick="switchAnswerTab('text')">Text</button>
+                        </div>
+                        <select id="lang-select" onchange="changeLanguage(this.value)">
+                            <option value="javascript">JavaScript</option>
+                            <option value="jsx">JSX / React</option>
+                            <option value="python" selected>Python</option>
+                            <option value="java">Java</option>
+                            <option value="c++">C++</option>
+                            <option value="c">C</option>
+                            <option value="go">Go</option>
+                            <option value="rust">Rust</option>
+                            <option value="ruby">Ruby</option>
+                            <option value="sql">SQL</option>
+                            <option value="html">HTML</option>
+                            <option value="css">CSS</option>
+                            <option value="shell">Shell</option>
+                        </select>
                     </div>
                     <div class="answer-panel">
                         <div id="answer-code">

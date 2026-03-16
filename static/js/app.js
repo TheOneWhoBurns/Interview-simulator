@@ -9,6 +9,7 @@ let state = {
     timerInterval: null,
     timerSeconds: 0,
     editor: null,
+    currentLanguage: 'python',
 };
 
 // ── API helpers ─────────────────────────────────────────────────────────
@@ -314,6 +315,10 @@ function displayQuestion(q) {
     // Show code tab for coding, text tab otherwise
     if (q.type === 'coding') {
         switchAnswerTab('code');
+        // Auto-detect language from question content
+        const lang = detectLanguage(q);
+        document.getElementById('lang-select').value = lang;
+        changeLanguage(lang);
     } else {
         switchAnswerTab('text');
     }
@@ -349,6 +354,22 @@ function switchAnswerTab(tab) {
 
 // ── Code Editor ─────────────────────────────────────────────────────────
 
+const LANG_TO_CM_MODE = {
+    'python': 'python',
+    'javascript': 'javascript',
+    'jsx': 'jsx',
+    'java': 'text/x-java',
+    'c++': 'text/x-c++src',
+    'c': 'text/x-csrc',
+    'go': 'go',
+    'rust': 'rust',
+    'ruby': 'ruby',
+    'sql': 'sql',
+    'html': 'htmlmixed',
+    'css': 'css',
+    'shell': 'shell',
+};
+
 function initEditor() {
     if (state.editor) return;
     state.editor = CodeMirror(document.getElementById('code-editor-container'), {
@@ -360,6 +381,32 @@ function initEditor() {
         indentWithTabs: false,
         extraKeys: { 'Tab': (cm) => cm.replaceSelection('    ', 'end') },
     });
+}
+
+function changeLanguage(lang) {
+    state.currentLanguage = lang;
+    if (state.editor) {
+        state.editor.setOption('mode', LANG_TO_CM_MODE[lang] || lang);
+    }
+}
+
+function detectLanguage(question) {
+    const text = (question.body + ' ' + question.topic + ' ' + question.title).toLowerCase();
+    if (/\breact\b|\bjsx\b|\bcomponent\b.*\brender\b/.test(text)) return 'jsx';
+    if (/\bjavascript\b|\bjs\b|\bnode\b|\btypescript\b|\bts\b/.test(text)) return 'javascript';
+    if (/\bjava\b(?!script)/.test(text)) return 'java';
+    if (/\bc\+\+\b|\bcpp\b/.test(text)) return 'c++';
+    if (/\bgo\b|\bgolang\b/.test(text)) return 'go';
+    if (/\brust\b/.test(text)) return 'rust';
+    if (/\bruby\b/.test(text)) return 'ruby';
+    if (/\bsql\b/.test(text)) return 'sql';
+    if (/\bhtml\b/.test(text)) return 'html';
+    if (/\bcss\b/.test(text)) return 'css';
+    if (/\bbash\b|\bshell\b/.test(text)) return 'shell';
+    if (/\bpython\b/.test(text)) return 'python';
+    // Default based on question type keywords
+    if (/context api|usestate|hooks|component/.test(text)) return 'jsx';
+    return 'python';
 }
 
 async function runCode() {
@@ -412,7 +459,7 @@ async function submitAnswer() {
                 body: {
                     code,
                     answer_text: text,
-                    language: 'python',
+                    language: state.currentLanguage || 'python',
                     time_spent_seconds: state.timerSeconds,
                 },
             }

@@ -102,7 +102,14 @@ input[type="text"], input[type="url"], textarea, select {
     transition: border-color 0.15s;
 }
 
-input:focus, textarea:focus { border-color: var(--accent); }
+input:focus, textarea:focus, select:focus { border-color: var(--accent); }
+
+#lang-select {
+    width: auto;
+    padding: 6px 10px;
+    font-size: 12px;
+    cursor: pointer;
+}
 
 textarea { resize: vertical; min-height: 80px; }
 
