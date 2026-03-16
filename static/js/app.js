@@ -228,15 +228,28 @@ async function loadQuizJobs() {
             return;
         }
 
-        el.innerHTML = ready.map(j => `
-            <div class="job-item" onclick="startQuizForJob('${j.job_id}')">
-                <div>
-                    <div class="job-info">${esc(j.company)} &mdash; ${esc(j.role)}</div>
-                    <div class="job-meta">${j.rounds} round(s) completed</div>
+        // Check which jobs have active rounds
+        const activeChecks = await Promise.all(
+            ready.map(j => api(`/api/jobs/${j.job_id}/rounds/active`).catch(() => ({ active: false })))
+        );
+
+        el.innerHTML = ready.map((j, i) => {
+            const active = activeChecks[i];
+            const hasActive = active.active && !active.completed;
+            const label = hasActive
+                ? `Resume (${active.answered}/${active.total_questions} answered)`
+                : 'Start Round';
+            const btnClass = hasActive ? 'btn' : 'btn btn-secondary';
+            return `
+                <div class="job-item" onclick="startQuizForJob('${j.job_id}')">
+                    <div>
+                        <div class="job-info">${esc(j.company)} &mdash; ${esc(j.role)}</div>
+                        <div class="job-meta">${j.rounds} round(s) completed</div>
+                    </div>
+                    <div class="${btnClass}" style="padding:6px 12px">${label}</div>
                 </div>
-                <div class="btn btn-secondary" style="padding:6px 12px">Start Round</div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
 
         // If we came from research flow with a job selected, auto-start
         if (state.currentJobId && ready.find(j => j.job_id === state.currentJobId)) {
@@ -249,6 +262,36 @@ async function loadQuizJobs() {
 
 async function startQuizForJob(jobId) {
     state.currentJobId = jobId;
+
+    // Check for an in-progress round first
+    try {
+        const active = await api(`/api/jobs/${jobId}/rounds/active`);
+        if (active.active && !active.completed) {
+            // Resume the existing round
+            state.currentRound = active.round_number;
+            state.totalQuestions = active.total_questions;
+
+            document.getElementById('quiz-select').classList.add('hidden');
+            document.getElementById('quiz-active').classList.remove('hidden');
+            document.getElementById('quiz-eval').classList.add('hidden');
+            document.getElementById('quiz-results').classList.add('hidden');
+
+            initEditor();
+            displayQuestion(active.current_question);
+            return;
+        }
+        if (active.active && active.completed) {
+            // Round is done but not evaluated — go straight to eval
+            state.currentRound = active.round_number;
+            document.getElementById('quiz-select').classList.add('hidden');
+            document.getElementById('quiz-eval').classList.remove('hidden');
+            return;
+        }
+    } catch (e) {
+        // No active round, proceed to generate
+    }
+
+    // Generate a new round
     try {
         const data = await apiStream(`/api/stream/jobs/${jobId}/rounds/start`, { num_questions: 4 }, 'Generating interview questions...');
         state.currentRound = data.round_number;
@@ -267,6 +310,14 @@ async function startQuizForJob(jobId) {
     } finally {
         hideLoading();
     }
+}
+
+function pauseInterview() {
+    // Save current answer text/code before leaving (without submitting)
+    stopTimer();
+    document.getElementById('quiz-active').classList.add('hidden');
+    document.getElementById('quiz-select').classList.remove('hidden');
+    showView('home');
 }
 
 function displayQuestion(q) {

@@ -141,8 +141,11 @@
                     <div id="test-results" class="mt-16 hidden"></div>
 
                     <div class="flex-between mt-16">
-                        <div class="text-sm text-dim">
-                            Question <span id="q-current">1</span> of <span id="q-total">4</span>
+                        <div class="flex gap-8" style="align-items:center">
+                            <div class="text-sm text-dim">
+                                Question <span id="q-current">1</span> of <span id="q-total">4</span>
+                            </div>
+                            <button class="btn-secondary btn" onclick="pauseInterview()" style="padding:6px 12px;font-size:11px">Pause &amp; Leave</button>
                         </div>
                         <button class="btn" onclick="submitAnswer()" id="submit-btn">Submit Answer</button>
                     </div>

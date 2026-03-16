@@ -33,6 +33,33 @@ def _require_active_round(job_id: str, round_number: int):
     return state
 
 
+@router.get("/active")
+async def get_active_round(job_id: str):
+    """Check if there's an in-progress round to resume."""
+    state = load_quiz_state(job_id)
+    if not state:
+        return {"active": False}
+
+    # Figure out which question to show next
+    answered_ids = {a.question_id for a in state.answers}
+    resume_index = state.current_question_index
+    # If current question was already answered, it's accurate; otherwise find first unanswered
+    for i, q in enumerate(state.questions):
+        if q.id not in answered_ids:
+            resume_index = i
+            break
+
+    q = get_question_for_user(state, resume_index)
+    return {
+        "active": True,
+        "round_number": state.round_number,
+        "total_questions": len(state.questions),
+        "answered": len(state.answers),
+        "completed": state.completed,
+        "current_question": q,
+    }
+
+
 @router.post("/start")
 async def start_round(job_id: str, req: StartRoundRequest):
     try:
