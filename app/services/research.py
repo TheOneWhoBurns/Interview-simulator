@@ -29,7 +29,7 @@ async def research_job(url: str) -> JobProfile:
         prompt,
         system=RESEARCH_SYSTEM,
         allowed_tools=["WebSearch", "WebFetch"],
-        timeout=180,
+        timeout=600,
     )
 
     job_id = new_job_id()
@@ -58,7 +58,7 @@ async def finalize_profile(
         profile_json=profile.model_dump_json(indent=2),
         answers_json=json.dumps(answers, indent=2),
     )
-    data = await call_claude_json(prompt, system=FINALIZE_SYSTEM, timeout=120)
+    data = await call_claude_json(prompt, system=FINALIZE_SYSTEM, timeout=300)
 
     # Update fields from LLM response
     if "company" in data:

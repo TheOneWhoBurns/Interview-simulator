@@ -8,7 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from app.config import settings
-from app.routes import interview, progress, research
+from app.routes import interview, progress, research, stream
 from app.services.code_executor import execute_code
 from app.services.tts import text_to_speech
 
@@ -18,6 +18,7 @@ app = FastAPI(title=settings.app_name)
 app.include_router(research.router)
 app.include_router(interview.router)
 app.include_router(progress.router)
+app.include_router(stream.router)
 
 
 @app.exception_handler(ValueError)

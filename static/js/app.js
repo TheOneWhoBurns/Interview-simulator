@@ -31,8 +31,80 @@ function showLoading(text = 'Working...') {
     document.getElementById('loading').classList.remove('hidden');
 }
 
+function updateLoading(text) {
+    document.getElementById('loading-text').textContent = text;
+}
+
 function hideLoading() {
     document.getElementById('loading').classList.add('hidden');
+}
+
+/**
+ * Call a streaming SSE endpoint. Shows live status in the loading overlay.
+ * Returns the parsed JSON from the final "done" event.
+ */
+async function apiStream(path, body, loadingLabel = 'Working...') {
+    showLoading(loadingLabel);
+    return new Promise((resolve, reject) => {
+        const ctrl = new AbortController();
+        fetch(path, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+            signal: ctrl.signal,
+        }).then(res => {
+            if (!res.ok) {
+                res.json().catch(() => ({ detail: res.statusText })).then(err => {
+                    reject(new Error(err.detail || 'Request failed'));
+                });
+                return;
+            }
+            const reader = res.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+
+            function read() {
+                reader.read().then(({ done, value }) => {
+                    if (done) {
+                        reject(new Error('Stream ended without result'));
+                        return;
+                    }
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop(); // keep incomplete line
+
+                    let eventType = null;
+                    for (const line of lines) {
+                        if (line.startsWith('event: ')) {
+                            eventType = line.slice(7).trim();
+                        } else if (line.startsWith('data: ') && eventType) {
+                            const data = line.slice(6);
+                            if (eventType === 'status') {
+                                updateLoading(data);
+                            } else if (eventType === 'thinking') {
+                                updateLoading('Thinking: ' + data);
+                            } else if (eventType === 'done') {
+                                resolve(JSON.parse(data));
+                                ctrl.abort(); // clean up
+                                return;
+                            } else if (eventType === 'error') {
+                                reject(new Error(data));
+                                ctrl.abort();
+                                return;
+                            }
+                            eventType = null;
+                        }
+                    }
+                    read();
+                }).catch(err => {
+                    if (err.name !== 'AbortError') reject(err);
+                });
+            }
+            read();
+        }).catch(err => {
+            if (err.name !== 'AbortError') reject(err);
+        });
+    });
 }
 
 // ── Navigation ──────────────────────────────────────────────────────────
@@ -89,12 +161,8 @@ async function startResearch() {
     const url = document.getElementById('job-url').value.trim();
     if (!url) return;
 
-    showLoading('Researching job listing... This may take a minute.');
     try {
-        const data = await api('/api/jobs/research', {
-            method: 'POST',
-            body: { url },
-        });
+        const data = await apiStream('/api/stream/jobs/research', { url }, 'Researching job listing...');
         state.currentJobId = data.job_id;
 
         // Show company info
@@ -131,12 +199,8 @@ async function finalizeProfile() {
         answers[id] = ta.value.trim();
     });
 
-    showLoading('Finalizing your profile...');
     try {
-        await api(`/api/jobs/${state.currentJobId}/finalize`, {
-            method: 'POST',
-            body: { answers },
-        });
+        await apiStream(`/api/stream/jobs/${state.currentJobId}/finalize`, { answers }, 'Finalizing your profile...');
         document.getElementById('research-step2').classList.add('hidden');
         document.getElementById('research-step3').classList.remove('hidden');
     } catch (e) {
@@ -184,12 +248,8 @@ async function loadQuizJobs() {
 
 async function startQuizForJob(jobId) {
     state.currentJobId = jobId;
-    showLoading('Generating interview questions...');
     try {
-        const data = await api(`/api/jobs/${jobId}/rounds/start`, {
-            method: 'POST',
-            body: { num_questions: 4 },
-        });
+        const data = await apiStream(`/api/stream/jobs/${jobId}/rounds/start`, { num_questions: 4 }, 'Generating interview questions...');
         state.currentRound = data.round_number;
         state.totalQuestions = data.total_questions;
         state.currentQuestionIndex = 0;
@@ -407,17 +467,17 @@ async function submitAnswer() {
 // ── Evaluation ──────────────────────────────────────────────────────────
 
 async function evaluateRound() {
-    showLoading('Evaluating your answers... This may take a minute.');
     try {
-        const data = await api(
-            `/api/jobs/${state.currentJobId}/rounds/${state.currentRound}/evaluate`,
-            { method: 'POST' }
+        const data = await apiStream(
+            `/api/stream/jobs/${state.currentJobId}/rounds/${state.currentRound}/evaluate`,
+            {},
+            'Evaluating your answers...',
         );
+        hideLoading();
         displayResults(data);
     } catch (e) {
-        alert('Evaluation failed: ' + e.message);
-    } finally {
         hideLoading();
+        alert('Evaluation failed: ' + e.message);
     }
 }
 

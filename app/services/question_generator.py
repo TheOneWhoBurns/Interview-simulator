@@ -36,7 +36,7 @@ async def generate_round(job_id: str, num_questions: int = 4) -> QuizState:
     )
 
     data = await call_claude_json(
-        prompt, system=QUESTION_GEN_SYSTEM, timeout=120
+        prompt, system=QUESTION_GEN_SYSTEM, timeout=300
     )
 
     questions = []

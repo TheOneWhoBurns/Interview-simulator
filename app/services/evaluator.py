@@ -65,7 +65,7 @@ async def evaluate_round(state: QuizState) -> tuple[RoundReport, ProgressReport]
         prompt,
         system=EVALUATION_SYSTEM,
         model=settings.eval_model,
-        timeout=180,
+        timeout=600,
     )
 
     # Build round report
