@@ -1,0 +1,21 @@
+# ── Part 5: GraphQL Query ───────────────────────────────────────────────
+#
+# Syntax guide:
+#   query {
+#     pluralName {          <-- the graphql_plural_name from your CPT
+#       nodes {             <-- WPGraphQL wraps results in nodes
+#         title             <-- built-in WP field
+#         fieldName         <-- your custom graphql field
+#         taxonomyName {    <-- connected taxonomy
+#           nodes {
+#             name          <-- term name (e.g. "Beginner")
+#           }
+#         }
+#       }
+#     }
+#   }
+
+query GetAssessmentTemplates {
+  # TODO: fill in the query
+  # Fetch: title, questionPrompts, and difficulty level term names
+}

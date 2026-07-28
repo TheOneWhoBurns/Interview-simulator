@@ -10,8 +10,7 @@ from app.config import settings
 logger = logging.getLogger(__name__)
 
 MAX_RETRIES = 2
-DEFAULT_TIMEOUT = 300  # 5 minutes — claude CLI can be slow
-
+DEFAULT_TIMEOUT = 3000  
 
 async def _run_claude_once(
     cmd: list[str],
